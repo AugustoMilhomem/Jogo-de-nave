@@ -23,14 +23,13 @@
     }
 
     #mobile-controls {
-      display: none;
       position: absolute;
-      top: 0;
+      bottom: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      pointer-events: none;
       z-index: 10;
+      pointer-events: none;
     }
 
     .btn {
@@ -49,30 +48,30 @@
       touch-action: none;
     }
 
-    #left-controls {
+    #dpad {
       position: absolute;
+      bottom: 20px;
       left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+      width: 180px;
+      height: 180px;
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      gap: 0;
+      pointer-events: all;
     }
 
-    #right-controls {
+    #dpad .empty { pointer-events: none; }
+
+    #shoot {
       position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+      bottom: 40px;
+      right: 40px;
     }
 
-    @media (orientation: landscape) {
+    @media (orientation: portrait) {
       #mobile-controls {
-        display: flex !important;
-        justify-content: space-between;
+        display: none;
       }
     }
   </style>
@@ -80,16 +79,20 @@
 <body>
   <canvas id="gameCanvas"></canvas>
 
+  <!-- CONTROLES -->
   <div id="mobile-controls">
-    <div id="left-controls">
+    <div id="dpad">
+      <div class="empty"></div>
       <button class="btn" id="up">⬆️</button>
-      <button class="btn" id="down">⬇️</button>
+      <div class="empty"></div>
       <button class="btn" id="left">⬅️</button>
+      <div class="empty"></div>
       <button class="btn" id="right">➡️</button>
+      <div class="empty"></div>
+      <button class="btn" id="down">⬇️</button>
+      <div class="empty"></div>
     </div>
-    <div id="right-controls">
-      <button class="btn" id="shoot">🔥</button>
-    </div>
+    <button class="btn" id="shoot">🔥</button>
   </div>
 
   <script>
@@ -104,7 +107,7 @@
     resizeCanvas();
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile) document.getElementById('mobile-controls').style.display = 'flex';
+    if (isMobile) document.getElementById('mobile-controls').style.display = 'block';
 
     // Sons
     const laserSound = new Audio('laser.mp3');
@@ -115,7 +118,6 @@
       document.addEventListener('click', () => backgroundMusic.play(), { once: true });
     });
 
-    // Imagens
     const playerImage = new Image();
     const enemyImage = new Image();
     playerImage.src = 'spaceship.png';
@@ -321,4 +323,3 @@
   </script>
 </body>
 </html>
-
