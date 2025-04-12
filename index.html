@@ -2,15 +2,17 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Jogo de Nave</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       background: black;
-      touch-action: manipulation;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      touch-action: none;
     }
 
     canvas {
@@ -25,55 +27,53 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
+      z-index: 10;
     }
 
     .btn {
       width: 60px;
       height: 60px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 2px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       font-size: 24px;
       color: white;
       pointer-events: all;
-      touch-action: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(5px);
+      touch-action: none;
     }
 
     #left-controls {
       position: absolute;
-      left: 50%;
+      left: 20px;
       top: 50%;
-      transform: translate(-50%, -50%);
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px 60px;
-      gap: 5px;
-      align-items: center;
-      justify-items: center;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 5px;
-      border-radius: 12px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     #right-controls {
       position: absolute;
       right: 20px;
-      bottom: 20px;
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 5px;
-      border-radius: 12px;
+      gap: 15px;
+    }
+
+    @media (orientation: landscape) {
+      #mobile-controls {
+        display: flex !important;
+        justify-content: space-between;
+      }
     }
   </style>
 </head>
@@ -82,15 +82,10 @@
 
   <div id="mobile-controls">
     <div id="left-controls">
-      <div></div>
       <button class="btn" id="up">⬆️</button>
-      <div></div>
-      <button class="btn" id="left">⬅️</button>
-      <div></div>
-      <button class="btn" id="right">➡️</button>
-      <div></div>
       <button class="btn" id="down">⬇️</button>
-      <div></div>
+      <button class="btn" id="left">⬅️</button>
+      <button class="btn" id="right">➡️</button>
     </div>
     <div id="right-controls">
       <button class="btn" id="shoot">🔥</button>
@@ -98,50 +93,50 @@
   </div>
 
   <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) document.getElementById('mobile-controls').style.display = 'flex';
+
+    // Sons
     const laserSound = new Audio('laser.mp3');
     const backgroundMusic = new Audio('song18.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
-
     backgroundMusic.play().catch(() => {
-      document.addEventListener('click', () => {
-        backgroundMusic.play();
-      }, { once: true });
+      document.addEventListener('click', () => backgroundMusic.play(), { once: true });
     });
 
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-
-    let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const controls = document.getElementById('mobile-controls');
-    if (isMobile) controls.style.display = 'block';
-
+    // Imagens
     const playerImage = new Image();
     const enemyImage = new Image();
-    let imagesLoaded = 0;
-
     playerImage.src = 'spaceship.png';
     enemyImage.src = 'spaceship-enemy.png';
 
+    let imagesLoaded = 0;
     playerImage.onload = () => { imagesLoaded++; startGame(); };
     enemyImage.onload = () => { imagesLoaded++; startGame(); };
 
     function startGame() {
-      if (imagesLoaded !== 2) return;
+      if (imagesLoaded < 2) return;
 
       const stars = Array.from({length: 100}, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
         radius: Math.random() * 1.5 + 0.5
       }));
 
       const player = {
-        x: width / 2 - 25,
-        y: height - 100,
+        x: canvas.width / 2 - 25,
+        y: canvas.height - 100,
         w: 50,
         h: 28,
         speed: 5,
@@ -149,8 +144,8 @@
         bullets: []
       };
 
-      let enemyBullets = [];
       let enemies = [];
+      let enemyBullets = [];
       let enemiesDefeated = 0;
       let enemiesCount = 10;
 
@@ -165,6 +160,15 @@
         el.addEventListener('touchend', () => mobileKeys[btn] = false);
       });
 
+      function drawStars() {
+        ctx.fillStyle = 'white';
+        stars.forEach(s => {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      }
+
       function drawPlayer() {
         ctx.drawImage(playerImage, player.x, player.y, player.w, player.h);
       }
@@ -175,8 +179,8 @@
         if (keys['ArrowLeft'] || keys['a'] || mobileKeys.left) player.x -= player.speed;
         if (keys['ArrowRight'] || keys['d'] || mobileKeys.right) player.x += player.speed;
 
-        player.x = Math.max(0, Math.min(width - player.w, player.x));
-        player.y = Math.max(0, Math.min(height - player.h, player.y));
+        player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+        player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
       }
 
       function shoot() {
@@ -186,7 +190,6 @@
           w: 4,
           h: 10
         });
-
         laserSound.currentTime = 0;
         laserSound.play();
       }
@@ -207,45 +210,20 @@
         });
       }
 
-      function enemyShoot(enemy) {
-        enemyBullets.push({
-          x: enemy.x + enemy.w / 2 - 2,
-          y: enemy.y + enemy.h,
-          w: 4,
-          h: 10
-        });
-      }
-
-      function updateEnemyBullets() {
-        enemyBullets.forEach(b => b.y += 5);
-        enemyBullets = enemyBullets.filter(b => b.y < height);
-
-        enemyBullets.forEach(b => {
-          if (
-            b.y + b.h > player.y && b.y < player.y + player.h &&
-            b.x + b.w > player.x && b.x < player.x + player.w
-          ) {
-            player.health--;
-            b.y = height + 1;
-          }
-        });
-      }
-
-      function drawEnemyBullets() {
-        ctx.fillStyle = 'red';
-        enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-      }
-
       function updateEnemies() {
         enemies.forEach(e => {
           e.x += e.direction * e.speed;
-
-          if (e.x <= 0 || e.x + e.w >= width) {
+          if (e.x <= 0 || e.x + e.w >= canvas.width) {
             e.direction *= -1;
           }
 
-          if (Math.random() < 0.02 && Math.random() < 0.3) {
-            enemyShoot(e);
+          if (Math.random() < 0.02) {
+            enemyBullets.push({
+              x: e.x + e.w / 2 - 2,
+              y: e.y + e.h,
+              w: 4,
+              h: 10
+            });
           }
 
           player.bullets.forEach(b => {
@@ -263,10 +241,30 @@
         enemies = enemies.filter(e => !e.dead);
       }
 
-      function spawnEnemy() {
+      function updateEnemyBullets() {
+        enemyBullets.forEach(b => b.y += 5);
+        enemyBullets = enemyBullets.filter(b => b.y < canvas.height);
+
+        enemyBullets.forEach(b => {
+          if (
+            b.y + b.h > player.y && b.y < player.y + player.h &&
+            b.x + b.w > player.x && b.x < player.x + player.w
+          ) {
+            player.health--;
+            b.y = canvas.height + 1;
+          }
+        });
+      }
+
+      function drawEnemyBullets() {
+        ctx.fillStyle = 'red';
+        enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+      }
+
+      function spawnEnemies() {
         for (let i = 0; i < enemiesCount; i++) {
           enemies.push({
-            x: Math.random() * (width - 50),
+            x: Math.random() * (canvas.width - 50),
             y: 50 + Math.random() * 50,
             w: 50,
             h: 80,
@@ -278,17 +276,8 @@
 
       let shootCooldown = 0;
 
-      function drawStars() {
-        ctx.fillStyle = 'white';
-        stars.forEach(s => {
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
-          ctx.fill();
-        });
-      }
-
-      function loop() {
-        ctx.clearRect(0, 0, width, height);
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawStars();
         movePlayer();
         drawPlayer();
@@ -309,28 +298,27 @@
         drawEnemyBullets();
 
         if (player.health <= 0) {
-          alert('Game Over');
-          player.health = 15;
+          alert("Game Over");
           enemies = [];
           enemiesDefeated = 0;
           enemiesCount = 10;
-          spawnEnemy();
+          player.health = 15;
+          spawnEnemies();
         }
 
-        if (enemies.length === 0 && enemiesDefeated >= 10) {
+        if (enemies.length === 0 && enemiesDefeated >= enemiesCount) {
+          enemiesCount += 5;
           enemiesDefeated = 0;
-          enemiesCount = Math.min(25, enemiesCount + 5);
-          spawnEnemy();
+          spawnEnemies();
         }
 
-        requestAnimationFrame(loop);
+        requestAnimationFrame(gameLoop);
       }
 
-      spawnEnemy();
-      loop();
+      spawnEnemies();
+      gameLoop();
     }
   </script>
 </body>
 </html>
-
 
