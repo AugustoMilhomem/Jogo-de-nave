@@ -12,13 +12,13 @@
       background: black;
       touch-action: manipulation;
     }
-   canvas {
-  display: block;
-  background-image: url('cenário.jpg');
-  background-size: cover;
-  background-position: center;
-}
 
+    canvas {
+      display: block;
+      background-image: url('cenário.jpg');
+      background-size: cover;
+      background-position: center;
+    }
 
     #mobile-controls {
       display: none;
@@ -29,70 +29,52 @@
       height: 100%;
       pointer-events: none;
     }
-.btn {
-  width: 60px;
-  height: 60px;
-  margin: 5px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  font-size: 24px;
-  color: white;
-  pointer-events: all;
-  touch-action: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
 
-
-    #left-controls, #right-controls {
+    .btn {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      font-size: 24px;
+      color: white;
       pointer-events: all;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
     }
 
     #left-controls {
       position: absolute;
-      left: 20px;
+      left: 50%;
       top: 50%;
-      transform: translateY(-50%);
+      transform: translate(-50%, -50%);
       display: grid;
       grid-template-columns: 60px 60px 60px;
       grid-template-rows: 60px 60px 60px;
       gap: 5px;
       align-items: center;
       justify-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px;
+      border-radius: 12px;
     }
 
-#left-controls {
-  position: absolute;
-  left: 20px;
-  bottom: 20px;
-  display: grid;
-  grid-template-columns: 60px 60px 60px;
-  grid-template-rows: 60px 60px 60px;
-  gap: 5px;
-  align-items: center;
-  justify-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 5px;
-  border-radius: 12px;
-}
-
-#right-controls {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 5px;
-  border-radius: 12px;
-}
-
+    #right-controls {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
@@ -100,10 +82,15 @@
 
   <div id="mobile-controls">
     <div id="left-controls">
+      <div></div>
       <button class="btn" id="up">⬆️</button>
+      <div></div>
       <button class="btn" id="left">⬅️</button>
-      <button class="btn" id="down">⬇️</button>
+      <div></div>
       <button class="btn" id="right">➡️</button>
+      <div></div>
+      <button class="btn" id="down">⬇️</button>
+      <div></div>
     </div>
     <div id="right-controls">
       <button class="btn" id="shoot">🔥</button>
@@ -345,4 +332,5 @@
   </script>
 </body>
 </html>
+
 
