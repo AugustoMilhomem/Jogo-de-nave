@@ -12,10 +12,13 @@
       background: black;
       touch-action: manipulation;
     }
-    canvas {
-      display: block;
-      background: radial-gradient(ellipse at center, #000 60%, #111 100%);
-    }
+   canvas {
+  display: block;
+  background-image: url('cenario.png');
+  background-size: cover;
+  background-position: center;
+}
+
 
     #mobile-controls {
       display: none;
@@ -99,7 +102,7 @@
 
   <script>
     const laserSound = new Audio('laser.wav');
-    const backgroundMusic = new Audio('background.wav');
+    const backgroundMusic = new Audio('song18.wav');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
 
