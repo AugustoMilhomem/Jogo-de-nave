@@ -10,61 +10,76 @@
       padding: 0;
       overflow: hidden;
       background: black;
+      touch-action: manipulation;
     }
     canvas {
       display: block;
       background: radial-gradient(ellipse at center, #000 60%, #111 100%);
     }
+
     #mobile-controls {
       display: none;
       position: absolute;
-      bottom: 10px;
+      top: 0;
+      left: 0;
       width: 100%;
+      height: 100%;
       pointer-events: none;
     }
+
     .btn {
       width: 60px;
       height: 60px;
       margin: 5px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
       border: 2px solid white;
       border-radius: 50%;
+      font-size: 24px;
+      color: white;
       pointer-events: all;
       touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    #left-controls, #right-controls {
+      pointer-events: all;
+    }
+
     #left-controls {
-  position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: grid;
-  grid-template-columns: 60px 60px 60px;
-  grid-template-rows: 60px 60px 60px;
-  gap: 5px;
-  align-items: center;
-  justify-items: center;
-}
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      gap: 5px;
+      align-items: center;
+      justify-items: center;
+    }
 
-#left-controls > button {
-  grid-column: 2; /* padrão centro */
-}
+    #left-controls > button {
+      grid-column: 2;
+    }
 
-#up { grid-row: 1; }
-#left { grid-row: 2; grid-column: 1; }
-#right { grid-row: 2; grid-column: 3; }
-#down { grid-row: 3; }
+    #up    { grid-row: 1; }
+    #left  { grid-row: 2; grid-column: 1; }
+    #right { grid-row: 2; grid-column: 3; }
+    #down  { grid-row: 3; }
 
-#right-controls {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
+    #right-controls {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
   </style>
 </head>
 <body>
@@ -82,239 +97,238 @@
     </div>
   </div>
 
-<script>
-  // Áudios
-  const laserSound = new Audio('laser.wav');
-  const backgroundMusic = new Audio('background.wav');
-  backgroundMusic.loop = true;
-  backgroundMusic.volume = 0.5;
+  <script>
+    const laserSound = new Audio('laser.wav');
+    const backgroundMusic = new Audio('background.wav');
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.5;
 
-  backgroundMusic.play().catch(() => {
-    document.addEventListener('click', () => {
-      backgroundMusic.play();
-    }, { once: true });
-  });
-
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  let width = window.innerWidth;
-  let height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
-
-  let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const controls = document.getElementById('mobile-controls');
-  if (isMobile) controls.style.display = 'block';
-
-  const playerImage = new Image();
-  const enemyImage = new Image();
-  let imagesLoaded = 0;
-
-  playerImage.src = 'spaceship.png';
-  enemyImage.src = 'spaceship-enemy.png';
-
-  playerImage.onload = () => { imagesLoaded++; startGame(); };
-  enemyImage.onload = () => { imagesLoaded++; startGame(); };
-
-  function startGame() {
-    if (imagesLoaded !== 2) return;
-
-    const stars = Array.from({length: 100}, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: Math.random() * 1.5 + 0.5
-    }));
-
-    const player = {
-      x: width / 2 - 25,
-      y: height - 100,
-      w: 50,
-      h: 28,
-      speed: 5,
-      health: 15,
-      bullets: []
-    };
-
-    let enemyBullets = [];
-    let enemies = [];
-    let enemiesDefeated = 0;
-    let enemiesCount = 10;
-
-    const keys = {};
-    document.addEventListener('keydown', e => keys[e.key] = true);
-    document.addEventListener('keyup', e => keys[e.key] = false);
-
-    const mobileKeys = { up: false, down: false, left: false, right: false, shoot: false };
-    ['up', 'down', 'left', 'right', 'shoot'].forEach(btn => {
-      const el = document.getElementById(btn);
-      el.addEventListener('touchstart', () => mobileKeys[btn] = true);
-      el.addEventListener('touchend', () => mobileKeys[btn] = false);
+    backgroundMusic.play().catch(() => {
+      document.addEventListener('click', () => {
+        backgroundMusic.play();
+      }, { once: true });
     });
 
-    function drawPlayer() {
-      ctx.drawImage(playerImage, player.x, player.y, player.w, player.h);
-    }
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-    function movePlayer() {
-      if (keys['ArrowUp'] || keys['w'] || mobileKeys.up) player.y -= player.speed;
-      if (keys['ArrowDown'] || keys['s'] || mobileKeys.down) player.y += player.speed;
-      if (keys['ArrowLeft'] || keys['a'] || mobileKeys.left) player.x -= player.speed;
-      if (keys['ArrowRight'] || keys['d'] || mobileKeys.right) player.x += player.speed;
+    let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const controls = document.getElementById('mobile-controls');
+    if (isMobile) controls.style.display = 'block';
 
-      player.x = Math.max(0, Math.min(width - player.w, player.x));
-      player.y = Math.max(0, Math.min(height - player.h, player.y));
-    }
+    const playerImage = new Image();
+    const enemyImage = new Image();
+    let imagesLoaded = 0;
 
-    function shoot() {
-      player.bullets.push({
-        x: player.x + player.w / 2 - 2,
-        y: player.y,
-        w: 4,
-        h: 10
+    playerImage.src = 'spaceship.png';
+    enemyImage.src = 'spaceship-enemy.png';
+
+    playerImage.onload = () => { imagesLoaded++; startGame(); };
+    enemyImage.onload = () => { imagesLoaded++; startGame(); };
+
+    function startGame() {
+      if (imagesLoaded !== 2) return;
+
+      const stars = Array.from({length: 100}, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.5 + 0.5
+      }));
+
+      const player = {
+        x: width / 2 - 25,
+        y: height - 100,
+        w: 50,
+        h: 28,
+        speed: 5,
+        health: 15,
+        bullets: []
+      };
+
+      let enemyBullets = [];
+      let enemies = [];
+      let enemiesDefeated = 0;
+      let enemiesCount = 10;
+
+      const keys = {};
+      document.addEventListener('keydown', e => keys[e.key] = true);
+      document.addEventListener('keyup', e => keys[e.key] = false);
+
+      const mobileKeys = { up: false, down: false, left: false, right: false, shoot: false };
+      ['up', 'down', 'left', 'right', 'shoot'].forEach(btn => {
+        const el = document.getElementById(btn);
+        el.addEventListener('touchstart', () => mobileKeys[btn] = true);
+        el.addEventListener('touchend', () => mobileKeys[btn] = false);
       });
 
-      laserSound.currentTime = 0;
-      laserSound.play();
-    }
+      function drawPlayer() {
+        ctx.drawImage(playerImage, player.x, player.y, player.w, player.h);
+      }
 
-    function updateBullets() {
-      player.bullets.forEach(b => b.y -= 10);
-      player.bullets = player.bullets.filter(b => b.y > 0);
-    }
+      function movePlayer() {
+        if (keys['ArrowUp'] || keys['w'] || mobileKeys.up) player.y -= player.speed;
+        if (keys['ArrowDown'] || keys['s'] || mobileKeys.down) player.y += player.speed;
+        if (keys['ArrowLeft'] || keys['a'] || mobileKeys.left) player.x -= player.speed;
+        if (keys['ArrowRight'] || keys['d'] || mobileKeys.right) player.x += player.speed;
 
-    function drawBullets() {
-      ctx.fillStyle = 'white';
-      player.bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-    }
+        player.x = Math.max(0, Math.min(width - player.w, player.x));
+        player.y = Math.max(0, Math.min(height - player.h, player.y));
+      }
 
-    function drawEnemies() {
-      enemies.forEach(e => {
-        ctx.drawImage(enemyImage, e.x, e.y, e.w, e.h);
-      });
-    }
+      function shoot() {
+        player.bullets.push({
+          x: player.x + player.w / 2 - 2,
+          y: player.y,
+          w: 4,
+          h: 10
+        });
 
-    function enemyShoot(enemy) {
-      enemyBullets.push({
-        x: enemy.x + enemy.w / 2 - 2,
-        y: enemy.y + enemy.h,
-        w: 4,
-        h: 10
-      });
-    }
+        laserSound.currentTime = 0;
+        laserSound.play();
+      }
 
-    function updateEnemyBullets() {
-      enemyBullets.forEach(b => b.y += 5);
-      enemyBullets = enemyBullets.filter(b => b.y < height);
+      function updateBullets() {
+        player.bullets.forEach(b => b.y -= 10);
+        player.bullets = player.bullets.filter(b => b.y > 0);
+      }
 
-      enemyBullets.forEach(b => {
-        if (
-          b.y + b.h > player.y && b.y < player.y + player.h &&
-          b.x + b.w > player.x && b.x < player.x + player.w
-        ) {
-          player.health--;
-          b.y = height + 1;
-        }
-      });
-    }
+      function drawBullets() {
+        ctx.fillStyle = 'white';
+        player.bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+      }
 
-    function drawEnemyBullets() {
-      ctx.fillStyle = 'red';
-      enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-    }
+      function drawEnemies() {
+        enemies.forEach(e => {
+          ctx.drawImage(enemyImage, e.x, e.y, e.w, e.h);
+        });
+      }
 
-    function updateEnemies() {
-      enemies.forEach(e => {
-        e.x += e.direction * e.speed;
+      function enemyShoot(enemy) {
+        enemyBullets.push({
+          x: enemy.x + enemy.w / 2 - 2,
+          y: enemy.y + enemy.h,
+          w: 4,
+          h: 10
+        });
+      }
 
-        if (e.x <= 0 || e.x + e.w >= width) {
-          e.direction *= -1;
-        }
+      function updateEnemyBullets() {
+        enemyBullets.forEach(b => b.y += 5);
+        enemyBullets = enemyBullets.filter(b => b.y < height);
 
-        if (Math.random() < 0.02 && Math.random() < 0.3) {
-          enemyShoot(e);
-        }
-
-        player.bullets.forEach(b => {
+        enemyBullets.forEach(b => {
           if (
-            b.y < e.y + e.h && b.y + b.h > e.y &&
-            b.x < e.x + e.w && b.x + b.w > e.x
+            b.y + b.h > player.y && b.y < player.y + player.h &&
+            b.x + b.w > player.x && b.x < player.x + player.w
           ) {
-            e.dead = true;
-            b.y = -10;
-            enemiesDefeated++;
+            player.health--;
+            b.y = height + 1;
           }
         });
-      });
+      }
 
-      enemies = enemies.filter(e => !e.dead);
-    }
+      function drawEnemyBullets() {
+        ctx.fillStyle = 'red';
+        enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+      }
 
-    function spawnEnemy() {
-      for (let i = 0; i < enemiesCount; i++) {
-        enemies.push({
-          x: Math.random() * (width - 50),
-          y: 50 + Math.random() * 50,
-          w: 50,
-          h: 80,
-          speed: 2,
-          direction: Math.random() < 0.5 ? 1 : -1
+      function updateEnemies() {
+        enemies.forEach(e => {
+          e.x += e.direction * e.speed;
+
+          if (e.x <= 0 || e.x + e.w >= width) {
+            e.direction *= -1;
+          }
+
+          if (Math.random() < 0.02 && Math.random() < 0.3) {
+            enemyShoot(e);
+          }
+
+          player.bullets.forEach(b => {
+            if (
+              b.y < e.y + e.h && b.y + b.h > e.y &&
+              b.x < e.x + e.w && b.x + b.w > e.x
+            ) {
+              e.dead = true;
+              b.y = -10;
+              enemiesDefeated++;
+            }
+          });
+        });
+
+        enemies = enemies.filter(e => !e.dead);
+      }
+
+      function spawnEnemy() {
+        for (let i = 0; i < enemiesCount; i++) {
+          enemies.push({
+            x: Math.random() * (width - 50),
+            y: 50 + Math.random() * 50,
+            w: 50,
+            h: 80,
+            speed: 2,
+            direction: Math.random() < 0.5 ? 1 : -1
+          });
+        }
+      }
+
+      let shootCooldown = 0;
+
+      function drawStars() {
+        ctx.fillStyle = 'white';
+        stars.forEach(s => {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+          ctx.fill();
         });
       }
-    }
 
-    let shootCooldown = 0;
+      function loop() {
+        ctx.clearRect(0, 0, width, height);
+        drawStars();
+        movePlayer();
+        drawPlayer();
 
-    function drawStars() {
-      ctx.fillStyle = 'white';
-      stars.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
-        ctx.fill();
-      });
-    }
+        if ((keys[' '] || mobileKeys.shoot) && shootCooldown <= 0) {
+          shoot();
+          shootCooldown = 10;
+        }
+        if (shootCooldown > 0) shootCooldown--;
 
-    function loop() {
-      ctx.clearRect(0, 0, width, height);
-      drawStars();
-      movePlayer();
-      drawPlayer();
+        updateBullets();
+        drawBullets();
 
-      if ((keys[' '] || mobileKeys.shoot) && shootCooldown <= 0) {
-        shoot();
-        shootCooldown = 10;
-      }
-      if (shootCooldown > 0) shootCooldown--;
+        updateEnemies();
+        drawEnemies();
 
-      updateBullets();
-      drawBullets();
+        updateEnemyBullets();
+        drawEnemyBullets();
 
-      updateEnemies();
-      drawEnemies();
+        if (player.health <= 0) {
+          alert('Game Over');
+          player.health = 15;
+          enemies = [];
+          enemiesDefeated = 0;
+          enemiesCount = 10;
+          spawnEnemy();
+        }
 
-      updateEnemyBullets();
-      drawEnemyBullets();
+        if (enemies.length === 0 && enemiesDefeated >= 10) {
+          enemiesDefeated = 0;
+          enemiesCount = Math.min(25, enemiesCount + 5);
+          spawnEnemy();
+        }
 
-      if (player.health <= 0) {
-        alert('Game Over');
-        player.health = 15;
-        enemies = [];
-        enemiesDefeated = 0;
-        enemiesCount = 10;
-        spawnEnemy();
+        requestAnimationFrame(loop);
       }
 
-      if (enemies.length === 0 && enemiesDefeated >= 10) {
-        enemiesDefeated = 0;
-        enemiesCount = Math.min(25, enemiesCount + 5);
-        spawnEnemy();
-      }
-
-      requestAnimationFrame(loop);
+      spawnEnemy();
+      loop();
     }
-
-    spawnEnemy();
-    loop();
-  }
-</script>
+  </script>
 </body>
 </html>
