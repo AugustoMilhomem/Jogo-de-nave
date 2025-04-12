@@ -29,22 +29,23 @@
       height: 100%;
       pointer-events: none;
     }
+.btn {
+  width: 60px;
+  height: 60px;
+  margin: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  font-size: 24px;
+  color: white;
+  pointer-events: all;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
 
-    .btn {
-      width: 60px;
-      height: 60px;
-      margin: 5px;
-      background: rgba(255,255,255,0.1);
-      border: 2px solid white;
-      border-radius: 50%;
-      font-size: 24px;
-      color: white;
-      pointer-events: all;
-      touch-action: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
 
     #left-controls, #right-controls {
       pointer-events: all;
@@ -63,49 +64,35 @@
       justify-items: center;
     }
 
-  #left-controls {
+#left-controls {
   position: absolute;
   left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 20px;
   display: grid;
   grid-template-columns: 60px 60px 60px;
   grid-template-rows: 60px 60px 60px;
   gap: 5px;
   align-items: center;
   justify-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  border-radius: 12px;
 }
 
-/* Define a posição de cada botão no grid para formar uma cruz */
-#up {
-  grid-row: 1;
-  grid-column: 2;
-}
-#left {
-  grid-row: 2;
-  grid-column: 1;
-}
-#right {
-  grid-row: 2;
-  grid-column: 3;
-}
-#down {
-  grid-row: 3;
-  grid-column: 2;
+#right-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  border-radius: 12px;
 }
 
-
-    #right-controls {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-    }
   </style>
 </head>
 <body>
