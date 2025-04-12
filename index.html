@@ -63,14 +63,37 @@
       justify-items: center;
     }
 
-    #left-controls > button {
-      grid-column: 2;
-    }
+  #left-controls {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  grid-template-columns: 60px 60px 60px;
+  grid-template-rows: 60px 60px 60px;
+  gap: 5px;
+  align-items: center;
+  justify-items: center;
+}
 
-    #up    { grid-row: 1; }
-    #left  { grid-row: 2; grid-column: 1; }
-    #right { grid-row: 2; grid-column: 3; }
-    #down  { grid-row: 3; }
+/* Define a posição de cada botão no grid para formar uma cruz */
+#up {
+  grid-row: 1;
+  grid-column: 2;
+}
+#left {
+  grid-row: 2;
+  grid-column: 1;
+}
+#right {
+  grid-row: 2;
+  grid-column: 3;
+}
+#down {
+  grid-row: 3;
+  grid-column: 2;
+}
+
 
     #right-controls {
       position: absolute;
