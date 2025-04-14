@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Jogo de Nave</title>
   <style>
     html, body {
@@ -30,6 +30,7 @@
       height: 100vh;
       z-index: 10;
       pointer-events: none;
+      display: none;
     }
 
     .btn {
@@ -46,8 +47,6 @@
       justify-content: center;
       backdrop-filter: blur(5px);
       touch-action: none;
-
-      /* Desativa seleção e cópia */
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -67,18 +66,14 @@
       pointer-events: all;
     }
 
-    #dpad .empty { pointer-events: none; }
+    #dpad .empty {
+      pointer-events: none;
+    }
 
     #shoot {
       position: absolute;
       bottom: 40px;
       right: 40px;
-    }
-
-    @media (orientation: portrait) {
-      #mobile-controls {
-        display: none;
-      }
     }
   </style>
 </head>
@@ -113,16 +108,33 @@
     resizeCanvas();
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile) document.getElementById('mobile-controls').style.display = 'block';
+    const mobileControls = document.getElementById('mobile-controls');
+
+    function checkOrientationAndControls() {
+      if (isMobile && window.innerWidth > window.innerHeight) {
+        mobileControls.style.display = 'block';
+      } else {
+        mobileControls.style.display = 'none';
+      }
+    }
+
+    window.addEventListener('resize', checkOrientationAndControls);
+    checkOrientationAndControls();
 
     // Sons
     const laserSound = new Audio('laser.mp3');
     const backgroundMusic = new Audio('song18.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
-    backgroundMusic.play().catch(() => {
-      document.addEventListener('click', () => backgroundMusic.play(), { once: true });
-    });
+
+    // Safari/iOS workaround para som
+    function initAudio() {
+      backgroundMusic.play().catch(() => {});
+      document.removeEventListener('touchstart', initAudio);
+      document.removeEventListener('click', initAudio);
+    }
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
 
     const playerImage = new Image();
     const enemyImage = new Image();
@@ -136,7 +148,7 @@
     function startGame() {
       if (imagesLoaded < 2) return;
 
-      const stars = Array.from({length: 100}, () => ({
+      const stars = Array.from({ length: 100 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         radius: Math.random() * 1.5 + 0.5
@@ -221,9 +233,7 @@
       function updateEnemies() {
         enemies.forEach(e => {
           e.x += e.direction * e.speed;
-          if (e.x <= 0 || e.x + e.w >= canvas.width) {
-            e.direction *= -1;
-          }
+          if (e.x <= 0 || e.x + e.w >= canvas.width) e.direction *= -1;
 
           if (Math.random() < 0.02) {
             enemyBullets.push({
@@ -327,7 +337,6 @@
       gameLoop();
     }
 
-    // Impede cópia/seleção/colagem nos botões
     document.querySelectorAll('.btn').forEach(btn => {
       ['copy', 'cut', 'paste', 'selectstart'].forEach(evt =>
         btn.addEventListener(evt, e => e.preventDefault())
@@ -336,4 +345,3 @@
   </script>
 </body>
 </html>
-
