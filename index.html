@@ -46,6 +46,12 @@
       justify-content: center;
       backdrop-filter: blur(5px);
       touch-action: none;
+
+      /* Desativa seleção e cópia */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
 
     #dpad {
@@ -320,6 +326,14 @@
       spawnEnemies();
       gameLoop();
     }
+
+    // Impede cópia/seleção/colagem nos botões
+    document.querySelectorAll('.btn').forEach(btn => {
+      ['copy', 'cut', 'paste', 'selectstart'].forEach(evt =>
+        btn.addEventListener(evt, e => e.preventDefault())
+      );
+    });
   </script>
 </body>
 </html>
+
